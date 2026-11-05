@@ -1,0 +1,43 @@
+{
+  "agent": {
+    "name": "BastionAgent",
+    "version": "2.0.0-enterprise",
+    "environment": "production",
+    "target_ip": "8.8.8.8",
+    "interface_name": "auto",
+    "base_subnet": "auto",
+    "ping_interval_seconds": 5,
+    "arp_scan_interval_multiplier": 3,
+    "alert_cooldown_seconds": 60,
+    "report_interval_hours": 168,
+    "dedup_hours": 24,
+    "ping_timeout_ms": 1500,
+    "max_concurrent_pings": 30
+  },
+  "security": {
+    "enable_immutable_audit_log": true,
+    "audit_hash_algorithm": "sha256",
+    "auto_authorize_baseline_on_first_run": true,
+    "require_tls_verification": true
+  },
+  "notifications": {
+    "webhook_url": "",
+    "webhook_auth_header": "",
+    "webhook_type": "discord",
+    "enable_syslog": true,
+    "syslog_host": "",
+    "syslog_port": 514
+  },
+  "defense": {
+    "defense_mode": "interactive",
+    "enable_anti_arp_spoof": true,
+    "enable_gateway_lock": false,
+    "protected_ports": [22, 5055, 3000, 5000, 8000, 8080, 4200],
+    "whitelist_ips": ["127.0.0.1", "::1"]
+  },
+  "storage": {
+    "db_filename": "bastion_inventory.db",
+    "audit_log_filename": "bastion_audit_trail.jsonl",
+    "system_log_filename": "bastion_system.log"
+  }
+}
