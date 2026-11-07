@@ -31,3 +31,4 @@ jobs:
           PYTHONPATH: .
         run: |
           pytest -v --durations=10
+
