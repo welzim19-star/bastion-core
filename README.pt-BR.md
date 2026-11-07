@@ -10,6 +10,8 @@
 [![Armazenamento](https://img.shields.io/badge/Armazenamento-SQLite%20Modo%20WAL-orange.svg)](https://www.sqlite.org/wal.html)
 [![Conformidade](https://img.shields.io/badge/Conformidade-Zero--PII%20Sanitizado-blue.svg)]()
 [![Licença](https://img.shields.io/badge/Licen%C3%A7a-MIT-green.svg)](LICENSE)
+[![Última Versão](https://img.shields.io/github/v/release/welzim19-star/bastion-core?label=Release&color=brightgreen&logo=windows)](https://github.com/welzim19-star/bastion-core/releases/latest)
+[![CI](https://github.com/welzim19-star/bastion-core/actions/workflows/ci.yml/badge.svg)](https://github.com/welzim19-star/bastion-core/actions/workflows/ci.yml)
 
 > **Motor Assíncrono de Auditoria de Rede e Registro Criptográfico Imutável.**  
 > Daemon defensivo desacoplado com sanitização estrita (Zero-PII), projetado para descoberta de ativos em tempo real, inteligência de dispositivos não invasiva e trilha de auditoria inviolável encadeada por SHA-256.
