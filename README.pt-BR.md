@@ -25,31 +25,31 @@ O Bastion-Core isola completamente a camada de varredura concorrente de rede da 
 ```mermaid
 flowchart TD
     subgraph PROBE_LAYER["Camada de Sonda Assíncrona & Síntese"]
-        AutoNIC["Autodescoberta de Interface / Sub-rede\n(Inspeção de Rotas Ativas)"]
-        BatchProbe["Varredura Ping Concorrente\n(ThreadPoolExecutor O(N/M))"]
-        ARP["Normalizador de Tabela ARP"]
-        Intel["Síntese de Inteligência de Ativos\n(TTL / OUI / NetBIOS / mDNS / Banners)"]
+        AutoNIC["Autodescoberta de Sub-rede<br/>(Rotas Ativas)"]
+        BatchProbe["Varredura Concorrente<br/>(ThreadPool O(N/M))"]
+        ARP["Normalizador ARP<br/>(Cache do Kernel)"]
+        Intel["Síntese de Ativos<br/>(TTL / OUI / NetBIOS / mDNS)"]
         
         AutoNIC --> BatchProbe
         BatchProbe --> ARP
         ARP --> Intel
     end
 
-    subgraph ENGINE_CORE["Motor de Orquestração Bastion-Core"]
-        Engine["Máquina de Estado & Reconciliador\n(Lock Thread-Safe de Mutação)"]
+    subgraph ENGINE_CORE["Motor Central Bastion-Core"]
+        Engine["Máquina de Estado & Reconciliador<br/>(Thread-Safe)"]
         Intel --> Engine
     end
 
-    subgraph STORAGE_LEDGER["Fronteira de Persistência Zero-Trust"]
-        WAL["Inventário SQLite\n(Modo WAL / Transações ACID)"]
-        Ledger["Trilha de Auditoria Imutável\n(Ledger Encadeado SHA-256)"]
+    subgraph STORAGE_LEDGER["Persistência Zero-Trust"]
+        WAL["Inventário SQLite<br/>(Modo WAL / ACID)"]
+        Ledger["Trilha de Auditoria<br/>(Cadeia SHA-256)"]
         
         Engine --> WAL
         Engine --> Ledger
     end
 
-    subgraph SINKS["Canais de Telemetria & Alertas"]
-        Syslog["Syslog RFC 5424 / Despacho de Eventos"]
+    subgraph SINKS["Telemetria & Alertas"]
+        Syslog["Syslog RFC 5424<br/>(Despacho de Eventos)"]
         Engine --> Syslog
     end
 

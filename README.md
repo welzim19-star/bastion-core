@@ -25,31 +25,31 @@ Bastion-Core cleanly isolates the high-concurrency probing layer from cryptograp
 ```mermaid
 flowchart TD
     subgraph PROBE_LAYER["Asynchronous Probing & Synthesis Tier"]
-        AutoNIC["NIC / Subnet Auto-Discovery<br/>(Interface Route Inspection)"]
-        BatchProbe["Concurrent Ping Sweep<br/>(ThreadPoolExecutor O(N/M))"]
-        ARP["ARP Cache Parser & Normalizer"]
-        Intel["Device Intelligence Synthesis<br/>(TTL / OUI / NetBIOS / mDNS / Banners)"]
+        AutoNIC["Subnet Auto-Discovery<br/>(Interface Inspection)"]
+        BatchProbe["Concurrent Ping Sweep<br/>(ThreadPool O(N/M))"]
+        ARP["ARP Cache Normalizer<br/>(Kernel Table)"]
+        Intel["Asset Intelligence<br/>(TTL / OUI / NetBIOS / mDNS)"]
         
         AutoNIC --> BatchProbe
         BatchProbe --> ARP
         ARP --> Intel
     end
 
-    subgraph ENGINE_CORE["Bastion-Core Orchestration Engine"]
-        Engine["State Machine & Reconciler<br/>(Thread-Safe Mutation Lock)"]
+    subgraph ENGINE_CORE["Bastion-Core Engine"]
+        Engine["State Machine & Reconciler<br/>(Thread-Safe)"]
         Intel --> Engine
     end
 
     subgraph STORAGE_LEDGER["Zero-Trust Persistence Boundary"]
-        WAL["SQLite Inventory Store<br/>(WAL Mode / ACID Transactions)"]
-        Ledger["Immutable Audit Ledger<br/>(SHA-256 Chained Hash Log)"]
+        WAL["SQLite Inventory<br/>(WAL Mode / ACID)"]
+        Ledger["Immutable Ledger<br/>(SHA-256 Chained)"]
         
         Engine --> WAL
         Engine --> Ledger
     end
 
     subgraph SINKS["Telemetry & Security Sinks"]
-        Syslog["RFC 5424 Syslog / Alert Dispatcher"]
+        Syslog["RFC 5424 Syslog<br/>(Alert Dispatcher)"]
         Engine --> Syslog
     end
 
