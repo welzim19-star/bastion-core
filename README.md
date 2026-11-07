@@ -23,10 +23,10 @@ Bastion-Core cleanly isolates the high-concurrency probing layer from cryptograp
 ```mermaid
 flowchart TD
     subgraph PROBE_LAYER["Asynchronous Probing & Synthesis Tier"]
-        AutoNIC["NIC / Subnet Auto-Discovery\n(Interface Route Inspection)"]
-        BatchProbe["Concurrent Ping Sweep\n(ThreadPoolExecutor O(N/M))"]
+        AutoNIC["NIC / Subnet Auto-Discovery<br/>(Interface Route Inspection)"]
+        BatchProbe["Concurrent Ping Sweep<br/>(ThreadPoolExecutor O(N/M))"]
         ARP["ARP Cache Parser & Normalizer"]
-        Intel["Device Intelligence Synthesis\n(TTL / OUI / NetBIOS / mDNS / Banners)"]
+        Intel["Device Intelligence Synthesis<br/>(TTL / OUI / NetBIOS / mDNS / Banners)"]
         
         AutoNIC --> BatchProbe
         BatchProbe --> ARP
@@ -34,13 +34,13 @@ flowchart TD
     end
 
     subgraph ENGINE_CORE["Bastion-Core Orchestration Engine"]
-        Engine["State Machine & Reconciler\n(Thread-Safe Mutation Lock)"]
+        Engine["State Machine & Reconciler<br/>(Thread-Safe Mutation Lock)"]
         Intel --> Engine
     end
 
     subgraph STORAGE_LEDGER["Zero-Trust Persistence Boundary"]
-        WAL["SQLite Inventory Store\n(WAL Mode / ACID Transactions)"]
-        Ledger["Immutable Audit Ledger\n(SHA-256 Chained Hash Log)"]
+        WAL["SQLite Inventory Store<br/>(WAL Mode / ACID Transactions)"]
+        Ledger["Immutable Audit Ledger<br/>(SHA-256 Chained Hash Log)"]
         
         Engine --> WAL
         Engine --> Ledger
