@@ -46,6 +46,9 @@ class NetworkProbe:
 
         # 2. Descobre Gateway e Subnet
         subnet_cidr = self._discover_subnet_cidr(local_ip)
+        octets = local_ip.split(".")
+        if len(octets) == 4 and local_ip != "127.0.0.1":
+            gateway = f"{octets[0]}.{octets[1]}.{octets[2]}.1"
 
         return NetworkInterface(
             name="auto_detected",

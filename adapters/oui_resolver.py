@@ -154,6 +154,30 @@ _EMBEDDED_OUI_DATABASE: Dict[str, str] = {
     "a4:cf:12": "Espressif Systems",
     "84:0d:8e": "Tuya Smart IoT",
     "10:52:1c": "Tuya Smart IoT",
+    "d4:ab:cd": "TCL Electronics (Smart TV)",
+    "d8:a3:5c": "Samsung Electronics (Smart TV)",
+    "c8:63:f1": "Sony Interactive Entertainment (PlayStation)",
+    "f8:46:1c": "Sony Interactive Entertainment (PlayStation)",
+    "00:d9:d1": "Sony Interactive Entertainment (PlayStation)",
+    "70:9e:29": "Sony Interactive Entertainment (PlayStation)",
+    "bc:60:a7": "Sony Interactive Entertainment (PlayStation)",
+
+    # ─── Expansão Smart TV, Gateways ISP & Virtualização ──────────────────────
+    "e0:01:c7": "TCL Electronics (Smart TV)",
+    "3c:6a:d2": "TP-Link / MitraStar Gateway Fibra",
+    "b4:79:c8": "TP-Link / Gateway Provedor (ONT)",
+    "10:7c:61": "Roteador Wi-Fi / Access Point Secundário",
+    "08:c3:b3": "Wireless Gateway / Mesh AP",
+    "08:00:27": "Oracle VirtualBox (VM)",
+    "60:c7:27": "Realtek / Workstation NIC",
+    "70:85:c2": "ASRock / Realtek PC",
+    "d8:bb:c1": "Micro-Star International (MSI)",
+    "b4:2e:99": "Gigabyte Technology",
+    "04:d4:c4": "ASUSTek Computer",
+    "74:d4:35": "Gigabyte Technology",
+    "ec:f4:bb": "Dell Inc.",
+    "f8:75:a4": "LCFC (HeFei) Electronics / Lenovo",
+    "a8:a1:59": "ASRock Incorporation",
 }
 
 
@@ -172,7 +196,19 @@ class OUIResolver:
 
         normalized = mac_address.lower().replace("-", ":")
         prefix = normalized[:8]
-        return self._table.get(prefix, "Fabricante desconhecido")
+        vendor = self._table.get(prefix)
+        if vendor:
+            return vendor
+
+        # Detecta Unicast Locally Administered Address (Wi-Fi Privacy iOS/Android/Win11)
+        try:
+            first_byte = int(normalized[:2], 16)
+            if (first_byte & 0x02) != 0 and (first_byte & 0x01) == 0:
+                return "MAC Privado (Wi-Fi Privacy)"
+        except ValueError:
+            pass
+
+        return "Fabricante desconhecido"
 
     def register_vendor(self, prefix: str, vendor_name: str):
         """Registra dinamicamente um novo fabricante na memória."""

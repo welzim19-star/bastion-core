@@ -122,4 +122,19 @@ def setup_telemetry(log_file_path: str, level: int = logging.INFO) -> logging.Lo
 
 
 def get_logger(name: str = "BastionEnterprise") -> logging.Logger:
-    return logging.getLogger(name)
+    if name == "BastionEnterprise" or name.startswith("BastionEnterprise."):
+        return logging.getLogger(name)
+    return logging.getLogger(f"BastionEnterprise.{name}")
+
+
+def clear_system_log(log_file_path: str) -> bool:
+    """Limpa o arquivo de log de telemetria preservando o descritor aberto."""
+    try:
+        if os.path.exists(log_file_path):
+            with open(log_file_path, "w", encoding="utf-8") as f:
+                f.write("")
+        log = get_logger("Telemetry")
+        log.info("Log de sistema reinicializado pelo operador via Dashboard.")
+        return True
+    except Exception:
+        return False

@@ -1,0 +1,22 @@
+[Unit]
+Description=Bastion Audit Enterprise - Network Resilience & Asset Probe
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/bastion-audit
+ExecStart=/opt/bastion-audit/BastionAgent --daemon
+Restart=always
+RestartSec=10
+LimitNOFILE=65536
+KillMode=process
+
+# Sandboxing & Security Posture
+ProtectSystem=full
+ProtectHome=read-only
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

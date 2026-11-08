@@ -100,22 +100,96 @@ class SQLiteDeviceRepository:
 
     def upsert_device(self, device: Device) -> bool:
         """Insere ou atualiza o dispositivo no inventário. Retorna True se for novo."""
+        import json as _json
         now = datetime.now().astimezone().isoformat(timespec="seconds")
         with self.transaction() as cur:
-            cur.execute("SELECT first_seen FROM devices WHERE mac = ?", (device.mac,))
+            # 1. Evita colisão de IP: se outro MAC antigo estava com este mesmo IP, move o antigo para Inativo (0.0.0.0)
+            if device.ip and device.ip not in ("0.0.0.0", ""):
+                cur.execute(
+                    "SELECT mac, metadata FROM devices WHERE ip = ? AND mac != ?",
+                    (device.ip, device.mac),
+                )
+                for stale_row in cur.fetchall():
+                    stale_meta = {}
+                    if stale_row["metadata"]:
+                        try:
+                            stale_meta = _json.loads(stale_row["metadata"])
+                        except Exception:
+                            stale_meta = {}
+                    stale_meta["last_known_ip"] = device.ip
+                    cur.execute(
+                        "UPDATE devices SET ip = '0.0.0.0', metadata = ? WHERE mac = ?",
+                        (_json.dumps(stale_meta, ensure_ascii=False), stale_row["mac"]),
+                    )
+
+            cur.execute("SELECT first_seen, metadata, device_type, os_hint, hostname FROM devices WHERE mac = ?", (device.mac,))
             row = cur.fetchone()
             is_new = row is None
 
             first_seen = row["first_seen"] if row else (device.first_seen or now)
             last_seen = now
 
+            existing_meta = {}
+            if row and row["metadata"]:
+                try:
+                    existing_meta = _json.loads(row["metadata"])
+                except Exception:
+                    existing_meta = {}
+
+            # 2. Se um celular reconectou com novo MAC Aleatório mas informou o MESMO ID único (hostname),
+            # herda automaticamente o apelido e modelo personalizados pelo usuário!
+            eff_hostname = device.hostname or (row["hostname"] if row else None)
+            if eff_hostname and not existing_meta.get("custom_name"):
+                cur.execute(
+                    "SELECT metadata, device_type, os_hint FROM devices WHERE hostname = ? AND mac != ? ORDER BY last_seen DESC LIMIT 1",
+                    (eff_hostname, device.mac),
+                )
+                prev_id_row = cur.fetchone()
+                if prev_id_row and prev_id_row["metadata"]:
+                    try:
+                        prev_meta = _json.loads(prev_id_row["metadata"])
+                        if prev_meta.get("custom_name"):
+                            existing_meta["custom_name"] = prev_meta["custom_name"]
+                        if prev_meta.get("manual_override") and prev_meta.get("hardware_model"):
+                            existing_meta["hardware_model"] = prev_meta["hardware_model"]
+                            existing_meta["manual_override"] = True
+                    except Exception:
+                        pass
+
+            new_meta = dict(existing_meta)
+            if device.metadata:
+                for k, v in device.metadata.items():
+                    if k not in ("evidence_json", "device_type", "os_hint", "is_mac_randomized", "confidence_score") and v is not None:
+                        if k == "hardware_model" and existing_meta.get("manual_override") and existing_meta.get("hardware_model"):
+                            continue
+                        new_meta[k] = v
+
+            # Preserva classificação manual ou mais específica caso o novo scan venha genérico
+            incoming_type = device.metadata.get("device_type") if device.metadata else None
+            if existing_meta.get("manual_override") and row and row["device_type"]:
+                effective_type = row["device_type"]
+            elif incoming_type and incoming_type != "Dispositivo Desconhecido":
+                effective_type = incoming_type
+            elif row and row["device_type"] and row["device_type"] != "Dispositivo Desconhecido":
+                effective_type = row["device_type"]
+            else:
+                effective_type = incoming_type or (row["device_type"] if row else None)
+
+            incoming_os = device.metadata.get("os_hint") if device.metadata else None
+            if incoming_os and incoming_os != "Indefinido":
+                effective_os = incoming_os
+            elif row and row["os_hint"] and row["os_hint"] != "Indefinido":
+                effective_os = row["os_hint"]
+            else:
+                effective_os = incoming_os or (row["os_hint"] if row else None)
+
             cur.execute(
                 """
                 INSERT INTO devices (mac, ip, vendor, first_seen, last_seen, status, hostname,
-                                     device_type, os_hint, is_mac_randomized, confidence_score, evidence)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                     device_type, os_hint, is_mac_randomized, confidence_score, evidence, metadata)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mac) DO UPDATE SET
-                    ip = excluded.ip,
+                    ip = CASE WHEN excluded.ip != '0.0.0.0' AND excluded.ip != '' THEN excluded.ip ELSE devices.ip END,
                     vendor = CASE WHEN excluded.vendor != 'Fabricante desconhecido' THEN excluded.vendor ELSE devices.vendor END,
                     last_seen = excluded.last_seen,
                     hostname = COALESCE(excluded.hostname, devices.hostname),
@@ -123,7 +197,8 @@ class SQLiteDeviceRepository:
                     os_hint = COALESCE(excluded.os_hint, devices.os_hint),
                     is_mac_randomized = excluded.is_mac_randomized,
                     confidence_score = CASE WHEN excluded.confidence_score > devices.confidence_score THEN excluded.confidence_score ELSE devices.confidence_score END,
-                    evidence = COALESCE(excluded.evidence, devices.evidence)
+                    evidence = COALESCE(excluded.evidence, devices.evidence),
+                    metadata = excluded.metadata
             """,
                 (
                     device.mac,
@@ -133,14 +208,120 @@ class SQLiteDeviceRepository:
                     last_seen,
                     device.status.value,
                     device.hostname,
-                    device.metadata.get("device_type") if device.metadata else None,
-                    device.metadata.get("os_hint") if device.metadata else None,
+                    effective_type,
+                    effective_os,
                     1 if device.metadata and device.metadata.get("is_mac_randomized") else 0,
                     device.metadata.get("confidence_score", 0) if device.metadata else 0,
                     device.metadata.get("evidence_json") if device.metadata else None,
+                    _json.dumps(new_meta, ensure_ascii=False),
                 ),
             )
             return is_new
+
+    def reconcile_online_devices(self, active_macs: Set[str], max_idle_minutes: int = 45) -> int:
+        """
+        Move para Inativos (ip = '0.0.0.0') os dispositivos que não estão na tabela ARP atual
+        e cujo last_seen já passou de max_idle_minutes, preservando last_known_ip em metadata.
+        """
+        import json as _json
+        now = datetime.now().astimezone()
+        moved = 0
+        with self.transaction() as cur:
+            cur.execute("SELECT mac, ip, last_seen, metadata FROM devices WHERE ip != '0.0.0.0' AND ip != ''")
+            rows = cur.fetchall()
+            for r in rows:
+                mac = r["mac"]
+                if mac in active_macs:
+                    continue
+                is_stale = False
+                raw_ts = r["last_seen"] or ""
+                if not raw_ts:
+                    is_stale = True
+                else:
+                    try:
+                        dt = datetime.fromisoformat(raw_ts)
+                        if dt.tzinfo is None:
+                            dt = dt.replace(tzinfo=now.tzinfo)
+                        diff_min = (now - dt).total_seconds() / 60.0
+                        if diff_min > max_idle_minutes:
+                            is_stale = True
+                    except Exception:
+                        is_stale = True
+
+                if is_stale:
+                    meta = {}
+                    if r["metadata"]:
+                        try:
+                            meta = _json.loads(r["metadata"])
+                        except Exception:
+                            meta = {}
+                    meta["last_known_ip"] = r["ip"]
+                    cur.execute(
+                        "UPDATE devices SET ip = '0.0.0.0', metadata = ? WHERE mac = ?",
+                        (_json.dumps(meta, ensure_ascii=False), mac),
+                    )
+                    moved += 1
+        return moved
+
+    def update_device_metadata(
+        self,
+        mac: str,
+        meta_updates: Dict[str, Any],
+        device_type: Optional[str] = None,
+        os_hint: Optional[str] = None,
+        hostname: Optional[str] = None,
+        vendor: Optional[str] = None,
+        confidence_score: Optional[int] = None,
+        evidence_list: Optional[List[str]] = None,
+    ) -> bool:
+        """Atualiza metadados avançados, apelido, categoria manual ou resultados de deep scan."""
+        import json as _json
+        with self.transaction() as cur:
+            cur.execute("SELECT * FROM devices WHERE mac = ?", (mac,))
+            row = cur.fetchone()
+            if not row:
+                return False
+
+            existing_meta = {}
+            if row["metadata"]:
+                try:
+                    existing_meta = _json.loads(row["metadata"])
+                except Exception:
+                    existing_meta = {}
+
+            existing_meta.update(meta_updates)
+
+            new_type = device_type if device_type is not None else row["device_type"]
+            new_os = os_hint if os_hint is not None else row["os_hint"]
+            new_host = hostname if hostname is not None else row["hostname"]
+            new_vendor = vendor if vendor is not None else row["vendor"]
+            new_conf = confidence_score if confidence_score is not None else row["confidence_score"]
+            new_ev = _json.dumps(evidence_list, ensure_ascii=False) if evidence_list is not None else row["evidence"]
+
+            cur.execute(
+                """
+                UPDATE devices
+                SET device_type = ?,
+                    os_hint = ?,
+                    hostname = ?,
+                    vendor = ?,
+                    confidence_score = ?,
+                    evidence = ?,
+                    metadata = ?
+                WHERE mac = ?
+                """,
+                (
+                    new_type,
+                    new_os,
+                    new_host,
+                    new_vendor,
+                    new_conf,
+                    new_ev,
+                    _json.dumps(existing_meta, ensure_ascii=False),
+                    mac,
+                ),
+            )
+            return True
 
     def get_device(self, mac: str) -> Optional[Device]:
         conn = self._get_connection()
@@ -289,9 +470,17 @@ class SQLiteDeviceRepository:
             except Exception:
                 evidence_list = [row["evidence"]]
 
+        extra_meta = {}
+        if row["metadata"]:
+            try:
+                extra_meta = _json.loads(row["metadata"])
+            except Exception:
+                extra_meta = {}
+
         metadata = {
-            "device_type": row["device_type"] or "",
-            "os_hint": row["os_hint"] or "",
+            **extra_meta,
+            "device_type": row["device_type"] or extra_meta.get("device_type") or "",
+            "os_hint": row["os_hint"] or extra_meta.get("os_hint") or "",
             "is_mac_randomized": bool(row["is_mac_randomized"]),
             "confidence_score": row["confidence_score"] or 0,
             "evidence": evidence_list,
