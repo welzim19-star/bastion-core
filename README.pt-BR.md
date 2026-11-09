@@ -23,6 +23,12 @@
 O Bastion-Core isola completamente a camada de varredura concorrente de rede da persistência criptográfica e dos pontos de integração externa.
 
 ```mermaid
+---
+config:
+  flowchart:
+    htmlLabels: false
+    padding: 24
+---
 flowchart TD
     subgraph PROBE_LAYER["Camada de Sonda Assíncrona & Síntese"]
         AutoNIC["Autodescoberta de Sub-rede"]

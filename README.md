@@ -23,6 +23,12 @@
 Bastion-Core cleanly isolates the high-concurrency probing layer from cryptographic storage and external notification sinks.
 
 ```mermaid
+---
+config:
+  flowchart:
+    htmlLabels: false
+    padding: 24
+---
 flowchart TD
     subgraph PROBE_LAYER["Asynchronous Probing & Synthesis Tier"]
         AutoNIC["Subnet Discovery"]
