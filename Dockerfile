@@ -8,8 +8,11 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Non-root user for bank-grade compliance
-RUN groupadd -g 10001 bastion && \
+# Install system tools and non-root user
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends iputils-ping && \
+    rm -rf /var/lib/apt/lists/* && \
+    groupadd -g 10001 bastion && \
     useradd -u 10001 -g bastion -s /bin/sh -m bastion
 
 # Install dependencies

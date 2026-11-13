@@ -88,14 +88,17 @@ class NetworkProbe:
             else:
                 timeout_s = max(1, t_ms // 1000)
                 cmd = ["ping", "-c", "1", "-W", str(timeout_s), host_ip]
-                return (
-                    subprocess.call(
-                        cmd,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.STDOUT,
+                try:
+                    return (
+                        subprocess.call(
+                            cmd,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.STDOUT,
+                        )
+                        == 0
                     )
-                    == 0
-                )
+                except Exception:
+                    return False
 
     def active_radar_sweep(self, subnet_cidr: str) -> List[str]:
         """
