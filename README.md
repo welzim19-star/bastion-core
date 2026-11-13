@@ -17,6 +17,10 @@
 > **High-Throughput Asynchronous Network Audit & Cryptographic Ledger Engine.**  
 > Decoupled, zero-PII security daemon designed for real-time subnet discovery, non-invasive device intelligence synthesis, and tamper-evident append-only audit trails.
 
+> [!NOTE]
+> **Edge Daemon vs. Cloud Showcase Architecture:**  
+> In enterprise on-premise deployments, Bastion-Core operates as an **Edge Sensor Daemon** with raw access to physical network interfaces (ARP tables, mDNS multicast sniffers, and layer-2 broadcast packets). When deployed in the cloud (such as on Render), it operates in **Cloud Audit Console Mode**: hosting the live interactive telemetry dashboard, executing cryptographic ledger verification over SHA-256 chained blocks, and exposing the REST API suite without requiring access to private local hardware.
+
 ---
 
 ## 📌 Architectural Overview (Galvanic Isolation)

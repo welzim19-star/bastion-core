@@ -17,6 +17,10 @@
 > **Motor Assíncrono de Auditoria de Rede e Registro Criptográfico Imutável.**  
 > Daemon defensivo desacoplado com sanitização estrita (Zero-PII), projetado para descoberta de ativos em tempo real, inteligência de dispositivos não invasiva e trilha de auditoria inviolável encadeada por SHA-256.
 
+> [!NOTE]
+> **Arquitetura: Sensor de Borda (Edge) vs. Vitrine em Nuvem (Render):**  
+> Em ambientes corporativos reais, o Bastion-Core opera localmente como um **Sensor de Borda (Edge Daemon)** com acesso direto à placa de rede física (tabelas ARP, escuta multicast mDNS e pacotes de broadcast da camada 2). Quando publicado na nuvem (como no Render), ele atua em **Modo Console de Auditoria**: servindo o dashboard interativo em tempo real, validando a integridade da trilha criptográfica (hashes SHA-256 encadeados e SQLite WAL) e expondo a API REST de auditoria sem a necessidade de acessar redes privadas.
+
 ---
 
 ## 📌 Visão Arquitetural (Isolamento Galvânico)
