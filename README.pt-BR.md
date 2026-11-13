@@ -7,6 +7,7 @@
 [![Linguagem](https://img.shields.io/badge/Linguagem-Python--3.12%2B-blue.svg)](https://www.python.org/)
 [![Arquitetura](https://img.shields.io/badge/Arquitetura-Isolamento%20Galv%C3%A2nico-purple.svg)]()
 [![Segurança](https://img.shields.io/badge/Trilha%20de%20Auditoria-SHA--256%20Encadeado-brightgreen.svg)]()
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-bastion--core--dashboard.onrender.com-00C7B7?logo=render&logoColor=white)](https://bastion-core-dashboard.onrender.com)
 [![Armazenamento](https://img.shields.io/badge/Armazenamento-SQLite%20Modo%20WAL-orange.svg)](https://www.sqlite.org/wal.html)
 [![Conformidade](https://img.shields.io/badge/Conformidade-Zero--PII%20Sanitizado-blue.svg)]()
 [![Licença](https://img.shields.io/badge/Licen%C3%A7a-MIT-green.svg)](LICENSE)
@@ -16,6 +17,20 @@
 
 > **Motor Assíncrono de Auditoria de Rede e Registro Criptográfico Imutável.**  
 > Daemon defensivo desacoplado com sanitização estrita (Zero-PII), projetado para descoberta de ativos em tempo real, inteligência de dispositivos não invasiva e trilha de auditoria inviolável encadeada por SHA-256.
+
+---
+
+## 🌐 Console Web em Nuvem & Dashboard Interativo
+
+A vitrine de demonstração do Bastion-Core está online no Render:
+
+🔗 **[https://bastion-core-dashboard.onrender.com](https://bastion-core-dashboard.onrender.com)**
+
+### Arquitetura de Operação em Dois Modos
+| Camada Operacional | Ambiente de Execução | Responsabilidades & Capacidades |
+| :--- | :--- | :--- |
+| **Console Web em Nuvem** | Web Service Render (Free Tier) | Hospeda o painel **Cyber Command Center** (temas Dark/Light), fluxo de eventos em tempo real (`bastion_system.log`), inspeção da cadeia criptográfica de blocos e API REST de telemetria (<60MB RAM). |
+| **Sensor de Borda (Edge Daemon)** | Servidor Linux Local / Bare-Metal | Descoberta física de camada 2 e 3 (varredura ARP, soquetes ICMP raw, consultas NetBIOS, escuta mDNS), defesa ativa de perímetro e inventário de rede local. |
 
 > [!NOTE]
 > **Arquitetura: Sensor de Borda (Edge) vs. Vitrine em Nuvem (Render):**  

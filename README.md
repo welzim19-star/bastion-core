@@ -7,6 +7,7 @@
 [![Language](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/)
 [![Architecture](https://img.shields.io/badge/Architecture-Galvanic%20Decoupled-purple.svg)]()
 [![Security](https://img.shields.io/badge/Audit%20Ledger-SHA--256%20Chained-brightgreen.svg)]()
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-bastion--core--dashboard.onrender.com-00C7B7?logo=render&logoColor=white)](https://bastion-core-dashboard.onrender.com)
 [![Storage](https://img.shields.io/badge/Storage-SQLite%20WAL%20Mode-orange.svg)](https://www.sqlite.org/wal.html)
 [![Compliance](https://img.shields.io/badge/Compliance-Zero--PII%20Sanitized-blue.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -16,6 +17,20 @@
 
 > **High-Throughput Asynchronous Network Audit & Cryptographic Ledger Engine.**  
 > Decoupled, zero-PII security daemon designed for real-time subnet discovery, non-invasive device intelligence synthesis, and tamper-evident append-only audit trails.
+
+---
+
+## 🌐 Live Cloud Web Console & Interactive Dashboard
+
+The cloud showcase of Bastion-Core is live on Render:
+
+🔗 **[https://bastion-core-dashboard.onrender.com](https://bastion-core-dashboard.onrender.com)**
+
+### Dual-Mode Operational Architecture
+| Operational Tier | Deployment Target | Responsibilities & Capabilities |
+| :--- | :--- | :--- |
+| **Cloud Audit Console** | Render Web Service (Free Tier) | Hosts the **Cyber Command Center** web dashboard (Dark/Light themes), live event stream (`bastion_system.log`), cryptographic ledger inspection, and REST telemetry endpoints (<60MB RAM footprint). |
+| **Edge Daemon Mode** | Bare-Metal / Local Linux Server | Raw layer-2/layer-3 discovery (ARP cache inspection, ICMP raw sockets, NetBIOS discovery, mDNS sweep), active host defense, and high-speed local asset inventory. |
 
 > [!NOTE]
 > **Edge Daemon vs. Cloud Showcase Architecture:**  
