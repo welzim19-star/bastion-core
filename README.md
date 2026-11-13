@@ -12,6 +12,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Latest Release](https://img.shields.io/github/v/release/welzim19-star/bastion-core?label=Release&color=brightgreen&logo=windows)](https://github.com/welzim19-star/bastion-core/releases/latest)
 [![CI](https://github.com/welzim19-star/bastion-core/actions/workflows/ci.yml/badge.svg)](https://github.com/welzim19-star/bastion-core/actions/workflows/ci.yml)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/welzim19-star/bastion-core)
 
 > **High-Throughput Asynchronous Network Audit & Cryptographic Ledger Engine.**  
 > Decoupled, zero-PII security daemon designed for real-time subnet discovery, non-invasive device intelligence synthesis, and tamper-evident append-only audit trails.

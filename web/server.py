@@ -125,7 +125,7 @@ class BastionAPIHandler(BaseHTTPRequestHandler):
         # ─── ROTAS REST API ───────────────────────────────────────────────────
         if path in ("/id", "/identificar"):
             self._handle_get_mobile_probe_page()
-        elif path == "/api/status":
+        elif path in ("/health", "/ready", "/api/status"):
             self._handle_get_status()
         elif path == "/api/devices":
             self._handle_get_devices()

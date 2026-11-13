@@ -83,8 +83,8 @@ def main():
         "--port",
         "-p",
         type=int,
-        default=5055,
-        help="Porta HTTP para o servidor web (Padrão: 5055)",
+        default=int(os.environ.get("PORT", "5055")),
+        help="Porta HTTP para o servidor web (Padrão: 5055 ou $PORT)",
     )
     parser.add_argument(
         "--host",

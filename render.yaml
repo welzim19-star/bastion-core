@@ -1,0 +1,20 @@
+# =============================================================================
+# Bastion-Core — Render Free Tier Deployment Blueprint
+# File: render.yaml
+# =============================================================================
+# 1-Click deploy on Render. Free web service with sub-60MB RAM footprint.
+# Interactive Security Audit Dashboard & Cryptographic Append-Only Ledger.
+# =============================================================================
+
+services:
+  - type: web
+    name: bastion-core-dashboard
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "5055"
