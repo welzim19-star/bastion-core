@@ -44,6 +44,15 @@ document.addEventListener('DOMContentLoaded', () => {
       this.bindEvents();
       this.fetchInitialData();
       this.startPolling();
+
+      window.addEventListener('languageChanged', () => {
+        this.renderOverviewTable();
+        this.renderInventoryTable();
+        this.applyThemeAndLayout();
+        if (window.I18N) {
+          this.showToast(window.I18N.t('toast_lang_changed'), 'info');
+        }
+      });
     },
 
     applyThemeAndLayout() {
@@ -52,7 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const btnQuick = document.getElementById('btnQuickThemeToggle');
       if (btnQuick) {
-        btnQuick.innerHTML = this.theme === 'light' ? '🌙 Modo Escuro' : '☀️ Modo Claro';
+        const isEn = window.I18N && window.I18N.getLang() === 'en';
+        btnQuick.innerHTML = this.theme === 'light' 
+          ? (isEn ? '🌙 Dark Mode' : '🌙 Modo Escuro') 
+          : (isEn ? '☀️ Light Mode' : '☀️ Modo Claro');
       }
 
       const cardLight = document.getElementById('cardThemeLight');
